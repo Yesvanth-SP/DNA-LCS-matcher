@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solution - Water Jug Problem Solver</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .result-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .steps {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .step {
+            margin: 5px 0;
+            padding: 5px;
+            background-color: white;
+            border-radius: 3px;
+        }
+        .path {
+            font-family: monospace;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            word-wrap: break-word;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .stat {
+            text-align: center;
+            margin: 10px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            min-width: 120px;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .back-button {
+            background-color: #6c757d;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        .back-button:hover {
+            background-color: #545b62;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Water Jug Problem Solution</h1>
+
+        <div class="result-section {{ 'success' if result.success else 'error' }}">
+            <h3>Algorithm: {{ result.algorithm.upper() }}</h3>
+            <p><strong>Status:</strong> {{ result.message }}</p>
+            <p><strong>Agent authenticated with API key:</strong> {{ api_key_display }}</p>
+        </div>
+
+        {% if result.success %}
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value">{{ result.visited_count }}</div>
+                <div class="stat-label">States Visited</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">{{ result.path|length }}</div>
+                <div class="stat-label">Steps to Solution</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">({{ result.goal_state[0] }}, {{ result.goal_state[1] }})</div>
+                <div class="stat-label">Goal State</div>
+            </div>
+        </div>
+
+        <div class="result-section info">
+            <h3>State Space Exploration Order</h3>
+            <div class="path">
+                {% if result.explored_order %}
+                    {{ result.explored_order|join(" -> ") }}
+                {% else %}
+                    No states explored.
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="result-section info">
+            <h3>Solution Steps</h3>
+            {% if result.path %}
+                <div class="steps">
+                    {% for step in result.path %}
+                        <div class="step">
+                            <strong>{{ loop.index }}.</strong> {{ step.action }}: {{ step.from_state }} → {{ step.to_state }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>Initial state (0, 0) is already the goal!</p>
+            {% endif %}
+        </div>
+
+        <div class="result-section info">
+            <h3>Complete Path</h3>
+            <div class="path">
+                {% if result.path %}
+                    {{ "(0, 0)" }} → {% for step in result.path %}{{ step.to_state }}{% if not loop.last %} → {% endif %}{% endfor %}
+                {% else %}
+                    (0, 0)
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="result-section info">
+            <h3>Visualization</h3>
+            <p>State space graph saved to: <code>{{ graph_path }}</code></p>
+            <p>If you have Graphviz installed, you can render it with:</p>
+            <code>dot -Tpng {{ graph_path }} -o state_space.png</code>
+        </div>
+
+        <a href="/" class="back-button">Solve Another Problem</a>
+    </div>
+</body>
+</html>
