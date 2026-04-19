@@ -128,14 +128,23 @@ export default function DPTableVisualization({ result, sequence1, sequence2 }) {
             </span>
           </div>
 
-          <div className="scrollbar-thin overflow-auto">
-            <table className="min-w-full border-separate border-spacing-2 text-center text-sm">
+          <div className="mb-4 rounded-[24px] border border-white/10 bg-white/5 p-4 text-sm leading-7" style={{ color: "var(--text-secondary)" }}>
+            <p className="font-semibold" style={{ color: "var(--text-primary)" }}>
+              Dynamic Programming Table dp[i][j]
+            </p>
+            <p className="mt-1">
+              <code>dp[i][j]</code> = length of LCS for <code>S1[0...i-1]</code> and <code>S2[0...j-1]</code>
+            </p>
+          </div>
+
+          <div className="scrollbar-thin overflow-auto rounded-[28px] border border-slate-300/20 bg-[#f8fafc] p-4 shadow-inner">
+            <table className="dp-notebook-table min-w-full text-center text-sm">
               <thead>
                 <tr>
-                  <th className="rounded-2xl bg-white/5 px-4 py-3">0</th>
-                  <th className="rounded-2xl bg-white/5 px-4 py-3">0</th>
+                  <th className="dp-label-cell">S2 →</th>
+                  <th className="dp-header-cell">0</th>
                   {sequence2.split("").map((character, index) => (
-                    <th key={`${character}-${index}`} className="rounded-2xl bg-white/5 px-4 py-3 text-cyan-200">
+                    <th key={`${character}-${index}`} className="dp-header-cell">
                       {character}
                     </th>
                   ))}
@@ -145,8 +154,8 @@ export default function DPTableVisualization({ result, sequence1, sequence2 }) {
               <tbody>
                 {result.table.map((row, rowIndex) => (
                   <tr key={`row-${rowIndex}`}>
-                    <th className="rounded-2xl bg-white/5 px-4 py-3 text-cyan-200">
-                      {rowIndex === 0 ? "0" : sequence1[rowIndex - 1]}
+                    <th className={`dp-label-cell ${rowIndex === 0 ? "font-semibold" : ""}`}>
+                      {rowIndex === 0 ? "S1 ↓" : sequence1[rowIndex - 1]}
                     </th>
 
                     {row.map((cell, columnIndex) => {
@@ -154,8 +163,7 @@ export default function DPTableVisualization({ result, sequence1, sequence2 }) {
                         return (
                           <td
                             key={`${rowIndex}-${columnIndex}`}
-                            className="rounded-2xl border bg-slate-950/25 px-4 py-3"
-                            style={{ borderColor: "rgba(255,255,255,0.05)", color: "var(--text-secondary)" }}
+                            className="dp-base-cell"
                           >
                             {cell}
                           </td>
@@ -166,24 +174,22 @@ export default function DPTableVisualization({ result, sequence1, sequence2 }) {
                       const step = visibleCells.get(id);
                       const isVisible = Boolean(step);
                       const isPath = finalPathSet.has(id);
-                      let cellClasses = "border-white/5 bg-slate-950/15";
-                      let textColor = "var(--text-muted)";
-
-                      if (isVisible && step?.type === "match") {
-                        cellClasses = "border-cyan-300/30 bg-cyan-400/15";
-                        textColor = "#e0f2fe";
-                      } else if (isVisible) {
-                        cellClasses = "border-violet-300/25 bg-violet-400/12";
-                        textColor = "#ede9fe";
-                      }
+                      const isMatch = step?.type === "match";
+                      const cellClasses = [
+                        "dp-base-cell",
+                        isVisible ? "dp-cell-visible" : "dp-cell-hidden",
+                        isMatch ? "dp-cell-match" : "",
+                        isPath ? "dp-cell-path" : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ");
 
                       return (
                         <motion.td
                           key={id}
                           initial={{ opacity: 0.25, scale: 0.96 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          className={`rounded-2xl border px-4 py-3 transition ${cellClasses} ${isPath ? "ring-2 ring-fuchsia-400/80" : ""}`}
-                          style={{ color: textColor }}
+                          className={cellClasses}
                         >
                           <span>{isVisible ? cell : "."}</span>
                         </motion.td>
@@ -193,6 +199,17 @@ export default function DPTableVisualization({ result, sequence1, sequence2 }) {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          <div className="mt-4 flex flex-wrap items-center gap-6 text-sm" style={{ color: "var(--text-secondary)" }}>
+            <span className="inline-flex items-center gap-2">
+              <span className="h-6 w-6 rounded border-2 border-slate-900 bg-white" />
+              Match cell boxed like diagonal + 1
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <span className="h-1 w-10 rounded-full bg-amber-500" />
+              Traceback path
+            </span>
           </div>
         </div>
       </div>
