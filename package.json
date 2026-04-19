@@ -8,6 +8,7 @@
     "dev:server": "node --watch server/index.js",
     "dev:full": "concurrently \"npm run dev:server\" \"npm run dev\"",
     "build": "vite build",
+    "build:vercel": "npm run build && node scripts/prepare-vercel.mjs",
     "start": "node server/index.js",
     "preview": "vite preview"
   },
