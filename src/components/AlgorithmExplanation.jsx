@@ -80,6 +80,13 @@ for i = 1 to n:
                   </div>
                 ))}
               </div>
+
+              <div className="mt-5 rounded-[24px] border border-cyan-300/20 bg-cyan-400/10 p-4">
+                <p className="font-semibold text-cyan-100">Memory Trick</p>
+                <p className="mt-2 text-sm leading-6" style={{ color: "var(--text-secondary)" }}>
+                  Match means diagonal plus 1. Mismatch means take the maximum of top or left.
+                </p>
+              </div>
             </div>
 
             <div className="glass-card p-6">

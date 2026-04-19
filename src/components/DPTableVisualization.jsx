@@ -92,6 +92,23 @@ export default function DPTableVisualization({ result, sequence1, sequence2 }) {
         </div>
 
         <div className="glass-card overflow-hidden p-5">
+          <div className="mb-5 grid gap-4 lg:grid-cols-2">
+            <div className="rounded-[24px] border border-cyan-300/20 bg-cyan-400/10 p-4">
+              <p className="text-sm font-semibold text-cyan-100">Match = Diagonal + 1</p>
+              <p className="mt-2 text-sm leading-6" style={{ color: "var(--text-secondary)" }}>
+                If the characters match, use <code>dp[i-1][j-1] + 1</code>. That means move
+                diagonally and add 1.
+              </p>
+            </div>
+            <div className="rounded-[24px] border border-violet-300/20 bg-violet-400/10 p-4">
+              <p className="text-sm font-semibold text-violet-100">Mismatch = max(Top, Left)</p>
+              <p className="mt-2 text-sm leading-6" style={{ color: "var(--text-secondary)" }}>
+                If the characters do not match, use <code>max(dp[i-1][j], dp[i][j-1])</code>.
+                Take the maximum of top or left, not the diagonal.
+              </p>
+            </div>
+          </div>
+
           <div className="mb-4 flex flex-wrap items-center gap-4 text-sm" style={{ color: "var(--text-secondary)" }}>
             <span className="inline-flex items-center gap-2">
               <span className="h-3 w-3 rounded-full bg-cyan-300" />
@@ -149,8 +166,6 @@ export default function DPTableVisualization({ result, sequence1, sequence2 }) {
                       const step = visibleCells.get(id);
                       const isVisible = Boolean(step);
                       const isPath = finalPathSet.has(id);
-                      const directionLabel = step?.direction === "diag" ? "diag" : step?.direction;
-
                       let cellClasses = "border-white/5 bg-slate-950/15";
                       let textColor = "var(--text-muted)";
 
@@ -170,14 +185,7 @@ export default function DPTableVisualization({ result, sequence1, sequence2 }) {
                           className={`rounded-2xl border px-4 py-3 transition ${cellClasses} ${isPath ? "ring-2 ring-fuchsia-400/80" : ""}`}
                           style={{ color: textColor }}
                         >
-                          <div className="flex flex-col items-center gap-1">
-                            <span>{isVisible ? cell : "."}</span>
-                            {isVisible ? (
-                              <span className="text-[10px] uppercase tracking-[0.24em]" style={{ color: "var(--text-muted)" }}>
-                                {directionLabel}
-                              </span>
-                            ) : null}
-                          </div>
+                          <span>{isVisible ? cell : "."}</span>
                         </motion.td>
                       );
                     })}

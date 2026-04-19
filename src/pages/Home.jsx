@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { FileDown } from "lucide-react";
 import { jsPDF } from "jspdf";
 import Navbar from "../components/Navbar";
@@ -8,7 +8,6 @@ import DNAInputForm from "../components/DNAInputForm";
 import ResultCards from "../components/ResultCards";
 import DPTableVisualization from "../components/DPTableVisualization";
 import LCSVisualization from "../components/LCSVisualization";
-import ChartsSection from "../components/ChartsSection";
 import ComplexitySection from "../components/ComplexitySection";
 import AlgorithmExplanation from "../components/AlgorithmExplanation";
 import BioinformaticsUseCases from "../components/BioinformaticsUseCases";
@@ -17,7 +16,6 @@ import { sampleDNA } from "../data/sampleDNA";
 import { computeLCS } from "../utils/lcsAlgorithm";
 import {
   generateRandomDNA,
-  getFrequencyData,
   sanitizeDNAInput,
   validateDNAInput,
 } from "../utils/dnaGenerator";
@@ -116,23 +114,6 @@ export default function Home() {
       isMounted = false;
     };
   }, []);
-
-  const frequencyData = useMemo(
-    () => getFrequencyData(sequence1, sequence2, result?.lcs ?? ""),
-    [result?.lcs, sequence1, sequence2]
-  );
-
-  const comparisonData = useMemo(() => {
-    if (!result) {
-      return [];
-    }
-
-    return [
-      { name: "Sequence 1", value: sequence1.length },
-      { name: "Sequence 2", value: sequence2.length },
-      { name: "LCS", value: result.lcsLength },
-    ];
-  }, [result, sequence1.length, sequence2.length]);
 
   function updateSequence(field, rawValue) {
     const sanitized = sanitizeDNAInput(rawValue);
@@ -271,11 +252,6 @@ export default function Home() {
             <ResultCards result={result} />
             <LCSVisualization result={result} sequence1={sequence1} sequence2={sequence2} />
             <DPTableVisualization result={result} sequence1={sequence1} sequence2={sequence2} />
-            <ChartsSection
-              result={result}
-              frequencyData={frequencyData}
-              comparisonData={comparisonData}
-            />
           </>
         ) : null}
 
