@@ -21,6 +21,7 @@ import {
   sanitizeDNAInput,
   validateDNAInput,
 } from "../utils/dnaGenerator";
+import { fetchComparison, fetchHealth, fetchRandomSequences, fetchSamples } from "../utils/api";
 
 const initialSequences = {
   sequence1: sampleDNA[0].sequence1,
@@ -75,6 +76,8 @@ export default function Home() {
   const [randomLength, setRandomLength] = useState(16);
   const [errors, setErrors] = useState({ sequence1: "", sequence2: "" });
   const [isProcessing, setIsProcessing] = useState(false);
+  const [apiStatus, setApiStatus] = useState("Checking API");
+  const [samples, setSamples] = useState(sampleDNA);
   const [result, setResult] = useState(() =>
     computeLCS(initialSequences.sequence1, initialSequences.sequence2)
   );
@@ -83,6 +86,36 @@ export default function Home() {
     document.body.dataset.theme = theme;
     document.documentElement.classList.toggle("dark", theme === "dark");
   }, [theme]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadInitialApiState() {
+      try {
+        const [healthPayload, samplesPayload] = await Promise.all([fetchHealth(), fetchSamples()]);
+
+        if (!isMounted) {
+          return;
+        }
+
+        setApiStatus(healthPayload.ok ? "API Online" : "API Offline");
+        setSamples(samplesPayload.samples?.length ? samplesPayload.samples : sampleDNA);
+      } catch {
+        if (!isMounted) {
+          return;
+        }
+
+        setApiStatus("Frontend Fallback");
+        setSamples(sampleDNA);
+      }
+    }
+
+    loadInitialApiState();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const frequencyData = useMemo(
     () => getFrequencyData(sequence1, sequence2, result?.lcs ?? ""),
@@ -119,7 +152,7 @@ export default function Home() {
     }));
   }
 
-  function compareSequences(first, second) {
+  async function compareSequences(first, second) {
     const nextErrors = {
       sequence1: validateDNAInput(first),
       sequence2: validateDNAInput(second),
@@ -132,19 +165,42 @@ export default function Home() {
     }
 
     setIsProcessing(true);
-    window.setTimeout(() => {
-      setResult(computeLCS(first, second));
+
+    try {
+      const payload = await fetchComparison(first, second);
+      setResult(payload.result);
+      setApiStatus("API Online");
+    } catch (error) {
+      const apiErrors = error?.payload?.errors;
+
+      if (apiErrors?.sequence1 || apiErrors?.sequence2) {
+        setErrors(apiErrors);
+      } else {
+        setResult(computeLCS(first, second));
+        setApiStatus("Frontend Fallback");
+      }
+    } finally {
       setIsProcessing(false);
-    }, 750);
+    }
   }
 
-  function handleGenerateRandom() {
-    const nextSequence1 = generateRandomDNA(randomLength);
-    const nextSequence2 = generateRandomDNA(randomLength);
-    setSequence1(nextSequence1);
-    setSequence2(nextSequence2);
-    setErrors({ sequence1: "", sequence2: "" });
-    compareSequences(nextSequence1, nextSequence2);
+  async function handleGenerateRandom() {
+    try {
+      const payload = await fetchRandomSequences(randomLength);
+      setSequence1(payload.sequence1);
+      setSequence2(payload.sequence2);
+      setErrors({ sequence1: "", sequence2: "" });
+      await compareSequences(payload.sequence1, payload.sequence2);
+      setApiStatus("API Online");
+    } catch {
+      const nextSequence1 = generateRandomDNA(randomLength);
+      const nextSequence2 = generateRandomDNA(randomLength);
+      setSequence1(nextSequence1);
+      setSequence2(nextSequence2);
+      setErrors({ sequence1: "", sequence2: "" });
+      await compareSequences(nextSequence1, nextSequence2);
+      setApiStatus("Frontend Fallback");
+    }
   }
 
   function handleClear() {
@@ -162,9 +218,10 @@ export default function Home() {
   }
 
   const dashboardStats = [
-    { label: "Samples Loaded", value: sampleDNA.length },
+    { label: "Samples Loaded", value: samples.length },
     { label: "Current Length", value: Math.max(sequence1.length, sequence2.length) },
     { label: "DP States", value: (sequence1.length + 1) * (sequence2.length + 1) },
+    { label: "Backend Status", value: apiStatus },
   ];
 
   return (
@@ -186,7 +243,7 @@ export default function Home() {
           sequence2={sequence2}
           errors={errors}
           randomLength={randomLength}
-          sampleDNA={sampleDNA}
+          sampleDNA={samples}
           dashboardStats={dashboardStats}
           isProcessing={isProcessing}
           onRandomLengthChange={setRandomLength}

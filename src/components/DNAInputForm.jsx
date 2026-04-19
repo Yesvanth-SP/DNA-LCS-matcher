@@ -63,13 +63,13 @@ export default function DNAInputForm({
           </div>
         </div>
 
-        <div className="mb-6 grid gap-4 md:grid-cols-3">
+        <div className="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {dashboardStats.map((item) => (
             <div key={item.label} className="glass-card p-5">
               <p className="text-sm" style={{ color: "var(--text-muted)" }}>
                 {item.label}
               </p>
-              <p className="mt-2 font-display text-3xl font-bold">{item.value}</p>
+              <p className="mt-2 font-display text-3xl font-bold break-words">{item.value}</p>
             </div>
           ))}
         </div>

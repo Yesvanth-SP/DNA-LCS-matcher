@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: dna-lcs-matcher
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
